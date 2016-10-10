@@ -5,7 +5,7 @@
 # Description:  Preprocess file for deep learning algorithm to predict votes
 # Version:      0.0.0.000
 # Created:      2016-10-08 16:00:51
-# Modified:     2016-10-09 20:44:24
+# Modified:     2016-10-09 22:48:22
 # Author:       Mickael Temporão < mickael.temporao.1 at ulaval.ca >
 # ------------------------------------------------------------------------------
 # Copyright (C) 2016 Mickael Temporão
@@ -13,7 +13,7 @@
 # ------------------------------------------------------------------------------
 rm(list=ls())
 requirements <- c('mice')
-install <- requirements[!(requirements %in% installed.packages()[,"Package"])]
+install      <- requirements[!(requirements %in% installed.packages()[,"Package"])]
 if(length(install)) install.packages(install)
 lapply(requirements, library, character.only = TRUE)
 
@@ -21,16 +21,16 @@ lapply(requirements, library, character.only = TRUE)
 age_group <- FALSE
 
 # Read & merge trian and test data, remove NA from train
-tr       <- read.csv('data/train.csv', stringsAsFactors=F)
-tr       <- tr[complete.cases(tr),]
-tr$train <- 1
-te       <- read.csv('data/test.csv', stringsAsFactors=F)
-d        <- merge(tr, te, all=T)
+tr    <- read.csv('data/train.csv', stringsAsFactors=F)
+tr    <- tr[complete.cases(tr),]
+tr_id <- tr$USER_ID
+te    <- read.csv('data/test.csv', stringsAsFactors=F)
+d     <- merge(tr, te, all=T)
 
 # Handling Outliers in YOB
 m <- median(subset(d$YOB, d$YOB >= 1920 & d$YOB <=2000), na.rm=TRUE) #1983
 d$YOB[d$YOB <= 1935 | d$YOB >= 2000] <- NA
-plot(d$YOB)
+#plot(d$YOB)
 
 # Imputing SES NA's
 set.seed(1)
@@ -38,7 +38,7 @@ imputed <- d[2:6]
 imputed[2:5] <- data.frame((lapply(imputed[2:5], as.factor)))
 imputed <- complete(mice(imputed))
 d$YOB   <- imputed$YOB
-plot(d$YOB)
+#plot(d$YOB)
 
 if (age_group == T) {
 # Creating AgeGroup
@@ -71,7 +71,6 @@ for(i in 1:nrow(d)){
   }
 }
 rm(i, age)
-
 # Let's remove YOB and replace it with AgeGroup.
 YOB <- 2013 - d$YOB
 YOB2 <- log(d$YOB)
@@ -104,4 +103,16 @@ d$EducationLevel <- factor(d$EducationLevel,
                                        "Master's Degree","Doctoral Degree"),
                               ordered = TRUE)
 
-rm(list=setdiff(ls(), 'd'))
+# Creating train and test sets
+target   <- d$Party[d$USER_ID %in% tr_id]
+d$Party  <- NULL
+d        <- model.matrix(~.-1,data=d)
+d        <- as.data.frame(d)
+names(d) <- make.names(names(d))
+tr       <- subset(d, d$USER_ID %in% tr_id)
+tr$Party <- target
+te       <- subset(d, !(d$USER_ID %in% tr_id))
+
+
+# Cleaning environment
+rm(list=setdiff(ls(), c('te', 'tr')))
