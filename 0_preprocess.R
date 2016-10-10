@@ -1,11 +1,11 @@
 #!/usr/bin/env Rscript
 # ------------------------------------------------------------------------------
-# Title:        Analytics Edge Kaggle Competition
-# Filename:     2016_edx_analytics-edge_kaggle.R
-# Description:  Preprocess Voting Data
+# Title:        Deep voting preprocess
+# Filename:     0_preprocess.R
+# Description:  Preprocess file for deep learning algorithm to predict votes
 # Version:      0.0.0.000
-# Created:      2016-05-25 16:00:51
-# Modified:     2016-10-07 16:00:07
+# Created:      2016-10-08 16:00:51
+# Modified:     2016-10-09 20:44:24
 # Author:       Mickael Temporão < mickael.temporao.1 at ulaval.ca >
 # ------------------------------------------------------------------------------
 # Copyright (C) 2016 Mickael Temporão
