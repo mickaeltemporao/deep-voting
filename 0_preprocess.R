@@ -5,7 +5,7 @@
 # Description:  Preprocess file for deep learning algorithm to predict votes
 # Version:      0.0.0.000
 # Created:      2016-10-08 16:00:51
-# Modified:     2016-10-11 08:33:49
+# Modified:     2016-10-11 10:04:10
 # Author:       Mickael Temporão < mickael.temporao.1 at ulaval.ca >
 # ------------------------------------------------------------------------------
 # Copyright (C) 2016 Mickael Temporão
@@ -81,16 +81,14 @@ rm(USER_ID)
 }
 
 # Replacing "DK" | "Yes" | "No"
-d[d==''] <- 0
-d[d=='Yes'] <- 1
-d[d=='No'] <- -1
+d[d==''] <- "DK"
 
 # Converting vars to ordered factors
 if (age_group == T) {
 d$AgeGroup <- factor(AgeGroup, c("Under18","18-24","25-34","35-44","45-54",
                                "55-64","Over65"), ordered = TRUE)
 }
-d$Income <- factor(d$Income, levels=c("0", "under $25,000",
+d$Income <- factor(d$Income, levels=c("DK", "under $25,000",
                                             "$25,001 - $50,000",
                                             "$50,000 - $74,999",
                                             "$75,000 - $100,000",
@@ -98,7 +96,7 @@ d$Income <- factor(d$Income, levels=c("0", "under $25,000",
                                             "over $150,000"),
                       ordered = TRUE)
 d$EducationLevel <- factor(d$EducationLevel,
-                              levels=c("0", "Current K-12","High School Diploma",
+                              levels=c("DK", "Current K-12","High School Diploma",
                                        "Associate's Degree",
                                        "Current Undergraduate",
                                        "Bachelor's Degree",
@@ -114,14 +112,14 @@ d$EducationLevel <- factor(d$EducationLevel,
 d$YOB <- d$YOB/max(d$YOB)
 
 # Creating train and test sets
-target   <- d$Party[d$USER_ID %in% tr_id]
-d$Party  <- NULL
-d        <- model.matrix(~.-1,data=d)
-d        <- as.data.frame(d)
-names(d) <- make.names(names(d))
-tr       <- subset(d, d$USER_ID %in% tr_id)
-tr$Party <- target
-te       <- subset(d, !(d$USER_ID %in% tr_id))
+target      <- d$Party[d$USER_ID %in% tr_id]
+d$Party     <- NULL
+d           <- model.matrix(~.-1,data=d)
+d           <- as.data.frame(d)
+names(d)    <- make.names(names(d))
+tr          <- subset(d, d$USER_ID %in% tr_id)
+tr$democrat <- ifelse(target=='Democrat', 1, 0)
+te          <- subset(d, !(d$USER_ID %in% tr_id))
 
 
 # Cleaning environment
